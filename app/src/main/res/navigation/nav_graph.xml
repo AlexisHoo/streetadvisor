@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/createUserFragment"
+    tools:ignore="MissingDefaultResource">
+
+    <fragment
+        android:id="@+id/createUserFragment"
+        android:name="fr.utt.if26.myapplication.feature_connexion.presentation.Activity.CreateUserFragment"
+        android:label="Create User"
+        tools:layout="@layout/fragment_create_user" />
+
+    <!-- Ajouter d'autres fragments ici -->
+</navigation>
