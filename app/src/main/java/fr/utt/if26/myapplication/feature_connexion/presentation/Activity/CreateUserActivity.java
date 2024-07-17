@@ -1,20 +1,17 @@
 package fr.utt.if26.myapplication.feature_connexion.presentation.Activity;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -25,37 +22,39 @@ import fr.utt.if26.myapplication.R;
 import fr.utt.if26.myapplication.feature_connexion.domain.model.User;
 import fr.utt.if26.myapplication.feature_connexion.presentation.ViewModel.CreateUserViewModel;
 
-public class CreateUserFragment extends Fragment {
+public class CreateUserActivity extends AppCompatActivity {
+
     private CreateUserViewModel createUserViewModel;
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_create_user, container, false);
-
-        final EditText editTextFirstName = view.findViewById(R.id.editTextFirstName);
-        final EditText editTextPassword = view.findViewById(R.id.editTextPassword);
-
-        final EditText editTextLastName = view.findViewById(R.id.editTextLastName);
-        final EditText editTextEmail = view.findViewById(R.id.editTextEmail);
-
-        final EditText editTextAge = view.findViewById(R.id.editTextAge);
-        final EditText editTextSexe = view.findViewById(R.id.editTextSexe);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_create_user);
 
 
-        Button buttonCreateUser = view.findViewById(R.id.buttonCreateUser);
+        final EditText editTextFirstName = findViewById(R.id.editTextFirstName);
+        final EditText editTextPassword = findViewById(R.id.editTextPassword);
+
+        final EditText editTextLastName = findViewById(R.id.editTextLastName);
+        final EditText editTextEmail = findViewById(R.id.editTextEmail);
+
+        final EditText editTextAge = findViewById(R.id.editTextAge);
+        final EditText editTextSexe = findViewById(R.id.editTextSexe);
+
+
+        Button buttonCreateUser = findViewById(R.id.buttonCreateUser);
 
         createUserViewModel = new ViewModelProvider(this).get(CreateUserViewModel.class);
 
-        createUserViewModel.isUserCreated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean isCreated) {
-                if (isCreated) {
-                    Toast.makeText(getActivity(), "User created successfully!", Toast.LENGTH_SHORT).show();
+        //createUserViewModel.isUserCreated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            //@Override
+            //public void onChanged(Boolean isCreated) {
+                //if (isCreated) {
+              //      Toast.makeText(CreateUserActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
                     // Navigate back or to another screen
-                }
-            }
-        });
+                //}
+            //}
+        //});
 
         buttonCreateUser.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,7 +79,7 @@ public class CreateUserFragment extends Fragment {
                         public void onSuccess(Long result) {
                             // Handle success
                             System.out.println("User inserted successfully with ID: " + result);
-                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            Intent intent = new Intent(CreateUserActivity.this, LoginActivity.class);
                             startActivity(intent);
                         }
 
@@ -91,12 +90,12 @@ public class CreateUserFragment extends Fragment {
                         }
                     }, MoreExecutors.directExecutor());
                 } else {
-                    Toast.makeText(getActivity(), "Please enter all details", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CreateUserActivity.this, "Please enter all details", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        return view;
-    }
-}
 
+    }
+
+}

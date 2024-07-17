@@ -10,8 +10,7 @@ public class User {
     private String sexe;
     private String password;
 
-    public User(int id, String firstName, String lastName, String email, int age, String sexe, String hashedPassword) {
-        this.id = id;
+    public User(String firstName, String lastName, String email, int age, String sexe, String hashedPassword) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
