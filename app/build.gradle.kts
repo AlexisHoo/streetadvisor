@@ -49,8 +49,11 @@ dependencies {
     //implementation("androidx.room:room-guava:31.1")
 
     implementation("androidx.room:room-guava:2.4.3")
-
     implementation("com.google.guava:guava:31.1-android")
+
+    //Google maps api
+    implementation("com.google.android.gms:play-services-maps:18.0.2")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")

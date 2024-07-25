@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import fr.utt.if26.myapplication.R;
 import fr.utt.if26.myapplication.feature_connexion.presentation.MainActivity;
+import fr.utt.if26.myapplication.navigation_feature.presentation.activity.NavigationActivity;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -46,8 +47,8 @@ public class WelcomeActivity extends AppCompatActivity {
         without.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
-                //startActivity(intent);
+                Intent intent = new Intent(WelcomeActivity.this, NavigationActivity.class);
+                startActivity(intent);
                 System.out.println("Not created yet");
 
             }
