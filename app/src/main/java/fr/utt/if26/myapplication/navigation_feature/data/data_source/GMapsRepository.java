@@ -1,7 +1,8 @@
 package fr.utt.if26.myapplication.navigation_feature.data.data_source;
 
+import android.location.Location;
+
 import fr.utt.if26.myapplication.navigation_feature.data.repository.NavigationRepository;
-import fr.utt.if26.myapplication.navigation_feature.domain.model.Location;
 import fr.utt.if26.myapplication.navigation_feature.domain.model.Route;
 
 public class GMapsRepository implements NavigationRepository {

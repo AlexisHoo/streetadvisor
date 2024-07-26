@@ -1,6 +1,7 @@
 package fr.utt.if26.myapplication.navigation_feature.data.repository;
 
-import fr.utt.if26.myapplication.navigation_feature.domain.model.Location;
+import android.location.Location;
+
 import fr.utt.if26.myapplication.navigation_feature.domain.model.Route;
 
 public interface NavigationRepository {

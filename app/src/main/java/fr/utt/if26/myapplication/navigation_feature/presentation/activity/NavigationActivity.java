@@ -3,31 +3,38 @@ package fr.utt.if26.myapplication.navigation_feature.presentation.activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.Manifest;
 import fr.utt.if26.myapplication.R;
-import fr.utt.if26.myapplication.navigation_feature.domain.model.Location;
+import android.location.Location;
 import fr.utt.if26.myapplication.navigation_feature.domain.model.Route;
 import fr.utt.if26.myapplication.navigation_feature.presentation.MyApplication;
 import fr.utt.if26.myapplication.navigation_feature.presentation.viewModel.NavigationViewModel;
@@ -40,6 +47,14 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private EditText cityNameEditText;
     private Button startNavigationButton;
     private FusedLocationProviderClient fusedLocationClient;
+    private LatLng userLocation;
+    //To keep track on the polylines
+    private List<Polyline> polylines = new ArrayList<>();
+
+    private LocationCallback locationCallback;
+    private static final float ARRIVAL_THRESHOLD = 50.0f;
+
+    private LatLng destination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +69,19 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         startNavigationButton.setOnClickListener(v -> {
             String cityName = cityNameEditText.getText().toString();
             if (!cityName.isEmpty()) {
-                startNavigationToCity(cityName);
+
+                startNavigationToCity(cityName, userLocation);
             } else {
                 Toast.makeText(this, "Please enter a city name", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        //Stop navigation
+        Button stopNavigationButton = findViewById(R.id.btn_stop_navigation);
+        stopNavigationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearPolylines();
             }
         });
 
@@ -97,6 +122,10 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10));
 
         enableMyLocation();
+
+        //Mise à jour de la position de l'utilisateur
+        startLocationUpdates();
+
     }
 
     private void enableMyLocation() {
@@ -112,10 +141,48 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
-                        LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
                         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
                     }
                 });
+    }
+
+    private void startLocationUpdates() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(10000); // Intervalle de mise à jour de la localisation (10 secondes)
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                for (Location location : locationResult.getLocations()) {
+                    LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    float[] results = new float[1];
+                    Location.distanceBetween(currentLocation.latitude, currentLocation.longitude,
+                            destination.latitude, destination.longitude, results);
+                    float distanceInMeters = results[0];
+
+                    if (distanceInMeters < ARRIVAL_THRESHOLD){
+                    // L'utilisateur est arrivé à destination
+                    clearPolylines();
+                    stopLocationUpdates();
+                    // Afficher un message ou effectuer toute autre action nécessaire
+                    // comme notifier l'utilisateur de son arrivée
+                    Toast.makeText(NavigationActivity.this, "Vous êtes arrivé à destination.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        };
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED) {
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+        }
+    }
+
+    private void stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
     private void updateMapWithRoute(Route route) {
@@ -124,30 +191,47 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         for (Location location : route.getPath()) {
             polylineOptions.add(new LatLng(location.getLatitude(), location.getLongitude()));
         }
-        googleMap.addPolyline(polylineOptions);
+        Polyline polyline = googleMap.addPolyline(polylineOptions);
+        polylines.add(polyline);
+        //googleMap.addPolyline(polylineOptions);
     }
 
-    private void startNavigation(LatLng destination) {
+    private void clearPolylines() {
+        for (Polyline polyline : polylines) {
+            polyline.remove();  // Supprime la polyline de la carte
+        }
+        polylines.clear(); // Vider la liste des polylines
+    }
+
+    private void startNavigation(LatLng destination, LatLng origin) {
         // Centrer la carte sur la destination
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(destination, 10));
 
         // Mettre à jour l'itinéraire sur la carte
-        Location origin = new Location(48.8566, 2.3522); //Paris
+        //Location origin = new Location(48.8566, 2.3522); //Paris
 
-        Location dest = new Location(destination.latitude, destination.longitude);
+        Location dest = new Location("");
+        dest.setLatitude(destination.latitude);
+        dest.setLongitude(destination.longitude);
 
-        navigationViewModel.startNavigation(origin, dest);
+
+        Location depart = new Location("");
+        depart.setLatitude(origin.latitude);
+        depart.setLongitude(origin.longitude);
+
+        navigationViewModel.startNavigation(depart, dest);
     }
 
 
-    private void startNavigationToCity(String cityName) {
+    private void startNavigationToCity(String cityName, LatLng origin) {
         Geocoder geocoder = new Geocoder(this);
         try {
             List<Address> addresses = geocoder.getFromLocationName(cityName, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
                 LatLng cityLatLng = new LatLng(address.getLatitude(), address.getLongitude());
-                startNavigation(cityLatLng);
+                destination = cityLatLng;
+                startNavigation(cityLatLng, origin);
             } else {
                 Toast.makeText(this, "City not found", Toast.LENGTH_SHORT).show();
             }

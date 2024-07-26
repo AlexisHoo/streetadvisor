@@ -45,7 +45,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Navigate" />
+
+            <Button
+                android:id="@+id/btn_stop_navigation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Stop Navigation" />
         </LinearLayout>
+
     </RelativeLayout>
 
 

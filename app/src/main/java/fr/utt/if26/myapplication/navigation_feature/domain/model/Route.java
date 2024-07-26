@@ -1,5 +1,7 @@
 package fr.utt.if26.myapplication.navigation_feature.domain.model;
 
+import android.location.Location;
+
 import java.util.List;
 
 public class Route {
